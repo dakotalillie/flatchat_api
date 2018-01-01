@@ -1,6 +1,5 @@
 class Api::V1::ConversationsController < ApplicationController
   before_action :set_conversation, only: [:show, :update, :destroy]
-  # skip_before_action :authorized, only: [:view]
   
   def index
     @user = User.find(params[:id])
@@ -30,11 +29,35 @@ class Api::V1::ConversationsController < ApplicationController
   end
   
   def create
-    @conversation = Conversation.new(conversation_params)
+    @conversation = Conversation.new()
+    users = conversation_params[:users].map do |user_id|
+      User.find(user_id)
+    end
+    users.each do |user|
+      @conversation.users.push(user)
+    end
     if @conversation.save
-      redirect_to conversation_path(@conversation)
+      render json: @conversation
     else
-      render :new
+      render json: {
+        error: "Something went wrong creating a new conversation"
+      }, error: 400
+    end
+  end
+
+  def remove_user
+    @conversation = Conversation.find(params[:conversation_id])
+    @user = User.find(params[:user_id])
+    if @conversation.users.delete(@user)
+      render json: {
+        message: "User successfully removed from conversation",
+        user_id: @user.id,
+        conversation_id: @conversation.id
+      }
+    else
+      render json: {
+        error: "Something went wrong removing a user from a conversation"
+      }, error: 400
     end
   end
   
@@ -56,7 +79,7 @@ class Api::V1::ConversationsController < ApplicationController
   end
   
   def conversation_params
-    params.require(:conversation).permit(:title)
+    params.permit(users: [])
   end
 
 end
