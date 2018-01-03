@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user, only: [:show, :update, :destroy]
-  skip_before_action :authorized, only: [:search, :create]
+  skip_before_action :authorized, only: [:search, :exact_search, :create]
 
   def search
     matches = User.where("username LIKE :query", query: "%#{params[:query]}%")
@@ -16,6 +16,15 @@ class Api::V1::UsersController < ApplicationController
       render json: results
     else
       render json: []
+    end
+  end
+
+  def exact_search
+    matches = User.where(username: params[:query])
+    if matches.first
+      render json: { message: "taken" }
+    else
+      render json: { message: "available" }
     end
   end
   

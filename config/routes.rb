@@ -10,7 +10,9 @@ Rails.application.routes.draw do
       post '/conversations', to: 'conversations#create'
       post '/conversation/view', to: 'conversations#view'
       get '/search/users/:query', to: 'users#search'
+      get '/search/users/exact/:query', to: 'users#exact_search'
       put '/conversation/:conversation_id/remove_user/:user_id', to: 'conversations#remove_user'
+      mount ActionCable.server => '/cable'
     end
   end
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
